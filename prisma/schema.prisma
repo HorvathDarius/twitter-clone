@@ -11,11 +11,31 @@ datasource db {
   relationMode = "prisma"
 }
 
+// Model for a document representing a tweet
+model Tweet {
+    id String @id @default(uuid()) //Id using a uuid
+    userId String // reference to user
+    content String // content of tweet
+    createdAt DateTime @default(now()) // creation time
 
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    // Creating a relation betweeen the userId field which will reference the id field from the user
+    // and using Cascade on delete, which means when i delete a user delete its tweets
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    likes Like[]
+
+    @@index([userId])
+}
+
+model Like {
+    userId String   // the user that liked the tweet
+    tweetId String  // the tweet that was liked
+    user User @relation(fields: [userId],references: [id], onDelete: Cascade)
+    Tweet Tweet @relation(fields: [tweetId],references: [id], onDelete: Cascade)
+
+    // making sure that only exists one combination of user id and tweet id, because a user can only like a tweet only once 
+    @@id([userId, tweetId])
+    @@index([userId])
+    @@index([tweetId])
 }
 
 // Necessary for Next auth
@@ -56,6 +76,14 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
+
+    // Non-NextAuth
+    tweets        Tweet[]
+    likes         Like[]
+    // By giving the same name to this two fields we are saying that they are connected
+    // Normally we would need to create an additional table to make this happen but prisma creates that joint table for us
+    followers     User[] @relation(name: "Followers")
+    follows       User[] @relation(name: "Followers")
 }
 
 model VerificationToken {
