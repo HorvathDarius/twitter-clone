@@ -1,7 +1,14 @@
-import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
+import React, {
+  FormEvent,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import Button from "./Button";
 import ProfileImage from "./ProfileImage";
 import { useSession } from "next-auth/react";
+import { api } from "~/utils/api";
 
 function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
   if (textArea == null) return;
@@ -11,11 +18,11 @@ function updateTextAreaSize(textArea?: HTMLTextAreaElement) {
 }
 
 export function NewTweetForm() {
-    const session = useSession();
-  if (session.status !== "authenticated") return;
+  const session = useSession();
+  if (session.status !== "authenticated") return null;
 
-  return <Form / >
-};
+  return <Form />;
+}
 
 function Form() {
   const session = useSession();
@@ -26,14 +33,33 @@ function Form() {
     textAreaRef.current = textArea;
   }, []);
 
+  if (session.status !== "authenticated") return null;
+
   useLayoutEffect(() => {
     updateTextAreaSize(textAreaRef.current);
   }, [inputValue]);
 
-  if (session.status !== "authenticated") return null;
+  // Create a tweet
+  const createTweet = api.tweet.create.useMutation({
+    onSuccess: (newTweet) => {
+      // Parameter onSuccess runs if the operation was a success
+      setInputValue("");
+    },
+  });
+
+  // After submitting the form call this function
+  function handleSubmit(e: FormEvent) {
+    // Prevent window from reloading
+    e.preventDefault();
+    // call the createTweet method to create a tweet
+    createTweet.mutate({ content: inputValue });
+  }
 
   return (
-    <form className="flex flex-col gap-2 border-b px-4 py-2">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-2 border-b px-4 py-2"
+    >
       <div className="flex gap-4">
         <ProfileImage src={session.data.user.image} />
         <textarea
@@ -49,6 +75,5 @@ function Form() {
     </form>
   );
 }
-
 
 export default NewTweetForm;
