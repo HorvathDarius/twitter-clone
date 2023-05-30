@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { VscHeart, VscHeartFilled } from "react-icons/vsc";
 import { IconHoverEffect } from "./IconHoverEffect";
 import { api } from "~/utils/api";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 type Tweet = {
   id: string;
@@ -31,7 +32,7 @@ export function InfiniteTweetList({
   fetchNewTweets,
   hasMore = false,
 }: InfiniteTweetListProps) {
-  if (isLoading) return <h1>Loading...</h1>;
+  if (isLoading) return <LoadingSpinner />;
   if (isError) return <h1>Error...</h1>;
   if (tweets == null) return null;
 
@@ -47,7 +48,7 @@ export function InfiniteTweetList({
         dataLength={tweets.length}
         next={fetchNewTweets}
         hasMore={hasMore}
-        loader={"Loading..."}
+        loader={<LoadingSpinner />}
       >
         {tweets.map((tweet) => {
           return <TweetCard key={tweet.id} {...tweet} />;
@@ -72,33 +73,32 @@ function TweetCard({
   const trpcUtils = api.useContext();
   const toggleLike = api.tweet.toggleLike.useMutation({
     onSuccess: ({ addedLike }) => {
-
       const updateData: Parameters<
         typeof trpcUtils.tweet.infiniteFeed.setInfiniteData
       >[1] = (oldData) => {
-        if(oldData == null) return
+        if (oldData == null) return;
 
-        const countModifier = addedLike ? 1 : -1
+        const countModifier = addedLike ? 1 : -1;
 
-        return{ 
+        return {
           ...oldData,
-          pages: oldData.pages.map(page => {
+          pages: oldData.pages.map((page) => {
             return {
               ...page,
-              tweets: page.tweets.map(tweet => {
-                if(tweet.id === id){
+              tweets: page.tweets.map((tweet) => {
+                if (tweet.id === id) {
                   return {
                     ...tweet,
                     likeCount: tweet.likeCount + countModifier,
-                    likedByMe: addedLike
-                  }
+                    likedByMe: addedLike,
+                  };
                 }
 
-                return tweet
-              })
-            }
-          })
-        }
+                return tweet;
+              }),
+            };
+          }),
+        };
       };
 
       trpcUtils.tweet.infiniteFeed.setInfiniteData({}, updateData);
