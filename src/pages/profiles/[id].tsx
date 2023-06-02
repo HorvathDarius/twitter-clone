@@ -73,7 +73,7 @@ const ProfilePage: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
         </div>
         <FollowButton
           isFollowing={profile.isFollowing}
-          isloading={toggleFollow.isLoading}
+          isLoading={toggleFollow.isLoading}
           userId={id}
           onClick={() => toggleFollow.mutate({ userId: id })}
         />
