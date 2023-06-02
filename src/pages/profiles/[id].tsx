@@ -1,6 +1,5 @@
 import type {
   GetStaticPaths,
-  GetStaticPathsContext,
   GetStaticPropsContext,
   InferGetStaticPropsType,
   NextPage,

@@ -1,14 +1,9 @@
-import { Prisma } from "@prisma/client";
-import { inferAsyncReturnType } from "@trpc/server";
-import next from "next/types";
-import { nextTick } from "process";
 import { z } from "zod";
 
 import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
-  createTRPCContext,
 } from "~/server/api/trpc";
 
 export const profileRouter = createTRPCRouter({
@@ -67,7 +62,7 @@ export const profileRouter = createTRPCRouter({
       }
 
       // Revalidation
-      
+
 
       return { addedFollow };
     }),
